@@ -30,7 +30,11 @@ const app = express();
 app.use(
   cors({
     credentials: true,
-    origin: ['https://temimart.onrender.com'],
+    origin: [
+      'https://temimart.onrender.com',
+      'http://localhost:19000',
+      'http://localhost:19006',
+    ],
   })
 );
 
