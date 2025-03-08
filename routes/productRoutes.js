@@ -2,6 +2,7 @@ import express from 'express';
 import expressAsyncHandler from 'express-async-handler';
 import Product from '../models/productModel.js';
 import { isAuth, isAdmin } from '../utils.js';
+import uploadToCloudinary from './uploadRoutes.js';
 
 const productRouter = express.Router();
 
@@ -15,46 +16,58 @@ productRouter.post(
   isAuth,
   isAdmin,
   expressAsyncHandler(async (req, res) => {
-    
-    const newProduct = new Product({
-      
-      name: 'sample name ' + Date.now(),
-      slug: 'sample-name-' + Date.now(),
-      image: '/images/p2.jpg',
-      price: 0,
-      category: 'sample category',
-      brand: 'sample brand',
-      countInStock: 0,
-      rating: 0,
-      numReviews: 0,
-      description: 'sample description',
-    });
-    const product = await newProduct.save();
-    res.send({ message: 'Product Created', product });
+    //   const newProduct = new Product({
+
+    //     name: 'sample name ' + Date.now(),
+    //     slug: 'sample-name-' + Date.now(),
+    //     image: '/images/p2.jpg',
+    //     price: 0,
+    //     category: 'sample category',
+    //     brand: 'sample brand',
+    //     countInStock: 0,
+    //     rating: 0,
+    //     numReviews: 0,
+    //     description: 'sample description',
+    //   });
+    //   const product = await newProduct.save();
+    //   res.send({ message: 'Product Created', product });
+    // })
+
+    try {
+      const {
+        name,
+        slug,
+        price,
+        image,
+        category,
+        brand,
+        countInStock,
+        description,
+      } = req.body;
+      let imageData = {};
+      if (image) {
+        const results = await uploadToCloudinary(image, 'my-profile');
+        imageData = results;
+      }
+      const newProduct = new Product({
+        name,
+        slug,
+        image: imageData,
+        price,
+        category,
+        brand,
+        countInStock,
+        rating: 0,
+        numReviews: 0,
+        description,
+      });
+
+      const product = await newProduct.save();
+      res.send({ message: 'Product Created', product });
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
   })
-  // async (req, res) => {
-  //     try {
-  //       const { name, slug, price, image,  category, brand, countInStock, description  } = req.body;
-
-  //       const product = new Product({
-  //         name,
-  //         slug,
-  //         image,
-  //         price,
-  //         category,
-  //         brand,
-  //         countInStock,
-  //         rating: 0,
-  //         numReviews: 0,
-  //         description,
-  //       });
-
-  //       const createdProduct = await product.save();
-  //       res.send({ message: 'Product Created', createdProduct });
-  //   } catch (error) {
-  //       res.status(500).json({ message: error.message });
-  //   }
-  // }
 );
 
 productRouter.put(

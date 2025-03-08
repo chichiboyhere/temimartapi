@@ -31,6 +31,7 @@ app.use(
   cors({
     credentials: true,
     origin: [
+      'https://temi-dipb.onrender.com',
       'https://temimart.onrender.com',
       'http://localhost:19000',
       'http://localhost:19006',
