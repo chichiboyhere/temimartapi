@@ -206,7 +206,7 @@ productRouter.delete(
     }
 
     // Ensure only the review owner can delete
-    if (product.reviews[reviewIndex].user !== req.user.name) {
+    if (product.reviews[reviewIndex].name !== req.user.name) {
       res.status(403);
       throw new Error('Unauthorized to delete this review');
     }
