@@ -160,7 +160,7 @@ productRouter.put(
     }
 
     const review = product.reviews.find(
-      (rev) => rev._id === reviewId.toString()
+      (rev) => rev._id.toString() === reviewId
     );
     if (!review) {
       res
