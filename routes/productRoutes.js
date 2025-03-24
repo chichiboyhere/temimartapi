@@ -159,7 +159,9 @@ productRouter.put(
       //throw new Error("Product not found");
     }
 
-    const review = product.reviews.find((rev) => rev._id === reviewId);
+    const review = product.reviews.find(
+      (rev) => rev._id === reviewId.toString()
+    );
     if (!review) {
       res
         .status(404)
