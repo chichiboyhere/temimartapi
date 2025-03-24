@@ -159,16 +159,14 @@ productRouter.put(
       //throw new Error("Product not found");
     }
 
-    const review = product.reviews.find(
-      (rev) => rev._id.toString() === reviewId
-    );
+    const review = product.reviews.find((rev) => rev._id === reviewId);
     if (!review) {
       res.status(404).send({ message: 'Review not found!' });
       //throw new Error("Review not found");
     }
 
     // Ensure only the review owner can edit
-    if (review.user.toString() !== req.user._id.toString()) {
+    if (review.user !== req.user._id) {
       res.status(403).send({ message: 'Unauthorized to edit this review!' });
       //throw new Error("Unauthorized to edit this review");
     }
@@ -196,7 +194,7 @@ productRouter.delete(
     }
 
     const reviewIndex = product.reviews.findIndex(
-      (rev) => rev._id.toString() === reviewId
+      (rev) => rev._id === reviewId
     );
     if (reviewIndex === -1) {
       res.status(404);
@@ -204,9 +202,7 @@ productRouter.delete(
     }
 
     // Ensure only the review owner can delete
-    if (
-      product.reviews[reviewIndex].user.toString() !== req.user._id.toString()
-    ) {
+    if (product.reviews[reviewIndex].user !== req.user._id) {
       res.status(403);
       throw new Error('Unauthorized to delete this review');
     }
