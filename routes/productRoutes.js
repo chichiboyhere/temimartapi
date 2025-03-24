@@ -152,7 +152,7 @@ productRouter.put(
   expressAsyncHandler(async (req, res) => {
     const { productId, reviewId } = req.params;
     const { rating, comment } = req.body;
-    console.log(req.body);
+
     const product = await Product.findById(productId);
     if (!product) {
       res.status(404).send({ message: 'Product not found!' });
@@ -161,12 +161,14 @@ productRouter.put(
 
     const review = product.reviews.find((rev) => rev._id === reviewId);
     if (!review) {
-      res.status(404).send({ message: 'Review not found!' });
+      res
+        .status(404)
+        .send({ message: `We could not find review ${reviewId}!` });
       //throw new Error("Review not found");
     }
 
     // Ensure only the review owner can edit
-    if (review.user !== req.user._id) {
+    if (review.name !== req.user.name) {
       res.status(403).send({ message: 'Unauthorized to edit this review!' });
       //throw new Error("Unauthorized to edit this review");
     }
