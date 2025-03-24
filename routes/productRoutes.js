@@ -198,7 +198,7 @@ productRouter.delete(
     }
 
     const reviewIndex = product.reviews.findIndex(
-      (rev) => rev._id === reviewId
+      (rev) => rev._id.toString() === reviewId
     );
     if (reviewIndex === -1) {
       res.status(404);
