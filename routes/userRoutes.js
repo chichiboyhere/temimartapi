@@ -179,10 +179,28 @@ userRouter.post(
 userRouter.post(
   '/signup',
   expressAsyncHandler(async (req, res) => {
+    const { name, email, password } = req.body;
+    // Confirm data
+    if (!name || !email || !password) {
+      return res.status(400).send({ message: 'All fields are required' });
+    }
+
+    // Check for duplicate username
+    const duplicateEmail = await User.findOne({ email });
+    const duplicateName = await User.findOne({ name });
+
+    if (duplicateEmail) {
+      return res.status(409).send({ message: 'Duplicate email. Try another' });
+    }
+    if (duplicateName) {
+      return res
+        .status(409)
+        .send({ message: 'Duplicate username. Try another' });
+    }
     const newUser = new User({
-      name: req.body.name,
-      email: req.body.email,
-      password: bcrypt.hashSync(req.body.password),
+      name,
+      email,
+      password: bcrypt.hashSync(password),
     });
     const user = await newUser.save();
     res.send({
