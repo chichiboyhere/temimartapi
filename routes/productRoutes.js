@@ -181,7 +181,18 @@ productRouter.put(
 
     await product.save();
 
-    res.json({ message: 'Review updated successfully', product });
+    //const updatedProduct = await product.save();
+    const updatedReview = product.reviews.find(
+      (rev) => rev._id.toString() === reviewId
+    );
+    res.status(201).send({
+      message: 'Review Updated',
+      review: updatedReview,
+      numReviews: product.numReviews,
+      rating: product.rating,
+    });
+
+    // res.json({ message: 'Review updated successfully', product });
   })
 );
 
