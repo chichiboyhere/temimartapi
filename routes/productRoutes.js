@@ -177,11 +177,17 @@ productRouter.put(
 
     review.rating = rating;
     review.comment = comment;
+
     review.createdAt = Date.now();
+
+    // update product
+    product.numReviews = product.reviews.length;
+    product.rating =
+      product.reviews.reduce((a, c) => c.rating + a, 0) /
+      product.reviews.length;
 
     await product.save();
 
-    //const updatedProduct = await product.save();
     const updatedReview = product.reviews.find(
       (rev) => rev._id.toString() === reviewId
     );
@@ -223,6 +229,12 @@ productRouter.delete(
     }
 
     product.reviews.splice(reviewIndex, 1); // Remove the review
+
+    //upadate product
+    product.numReviews = product.reviews.length;
+    product.rating =
+      product.reviews.reduce((a, c) => c.rating + a, 0) /
+      product.reviews.length;
     await product.save();
 
     res.json({ message: 'Review deleted successfully', product });
