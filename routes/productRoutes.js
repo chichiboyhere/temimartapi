@@ -202,45 +202,6 @@ productRouter.post(
 //   })
 // );
 
-productRouter.delete(
-  '/:productId/reviews/:reviewId',
-  isAuth,
-  expressAsyncHandler(async (req, res) => {
-    const { productId, reviewId } = req.params;
-
-    const product = await Product.findById(productId);
-    if (!product) {
-      res.status(404);
-      throw new Error('Product not found');
-    }
-
-    const reviewIndex = product.reviews.findIndex(
-      (rev) => rev._id.toString() === reviewId
-    );
-    if (reviewIndex === -1) {
-      res.status(404);
-      throw new Error('Review not found');
-    }
-
-    // Ensure only the review owner can delete
-    if (product.reviews[reviewIndex].name !== req.user.name) {
-      res.status(403);
-      throw new Error('Unauthorized to delete this review');
-    }
-
-    product.reviews.splice(reviewIndex, 1); // Remove the review
-
-    //upadate product
-    product.numReviews = product.reviews.length;
-    product.rating =
-      product.reviews.reduce((a, c) => c.rating + a, 0) /
-      product.reviews.length;
-    await product.save();
-
-    res.json({ message: 'Review deleted successfully', product });
-  })
-);
-
 productRouter.put(
   '/:productId/reviews/:reviewId',
   isAuth,
@@ -285,6 +246,45 @@ productRouter.put(
       message: 'Review Updated',
       product, // Return the updated product
     });
+  })
+);
+
+productRouter.delete(
+  '/:productId/reviews/:reviewId',
+  isAuth,
+  expressAsyncHandler(async (req, res) => {
+    const { productId, reviewId } = req.params;
+
+    const product = await Product.findById(productId);
+    if (!product) {
+      res.status(404);
+      throw new Error('Product not found');
+    }
+
+    const reviewIndex = product.reviews.findIndex(
+      (rev) => rev._id.toString() === reviewId
+    );
+    if (reviewIndex === -1) {
+      res.status(404);
+      throw new Error('Review not found');
+    }
+
+    // Ensure only the review owner can delete
+    if (product.reviews[reviewIndex].name !== req.user.name) {
+      res.status(403);
+      throw new Error('Unauthorized to delete this review');
+    }
+
+    product.reviews.splice(reviewIndex, 1); // Remove the review
+
+    //upadate product
+    product.numReviews = product.reviews.length;
+    product.rating =
+      product.reviews.reduce((a, c) => c.rating + a, 0) /
+      product.reviews.length;
+    await product.save();
+
+    res.json({ message: 'Review deleted successfully', product });
   })
 );
 
