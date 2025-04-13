@@ -31,6 +31,7 @@ app.use(
   cors({
     credentials: true,
     origin: [
+      'https://expo.dev/accounts/chichiboyhere/projects/Temi/builds/874ce77a-ec77-41dc-b5b3-001c5a862957',
       'https://temi-dipb.onrender.com',
       'https://temimart.onrender.com',
       'http://localhost:19000',
