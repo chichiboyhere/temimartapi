@@ -146,61 +146,61 @@ productRouter.post(
   })
 );
 
-productRouter.put(
-  '/:productId/reviews/:reviewId',
-  isAuth,
-  expressAsyncHandler(async (req, res) => {
-    const { productId, reviewId } = req.params;
-    const { rating, comment } = req.body;
+// productRouter.put(
+//   '/:productId/reviews/:reviewId',
+//   isAuth,
+//   expressAsyncHandler(async (req, res) => {
+//     const { productId, reviewId } = req.params;
+//     const { rating, comment } = req.body;
 
-    const product = await Product.findById(productId);
-    if (!product) {
-      res.status(404).send({ message: 'Product not found!' });
-      //throw new Error("Product not found");
-    }
+//     const product = await Product.findById(productId);
+//     if (!product) {
+//       res.status(404).send({ message: 'Product not found!' });
+//       //throw new Error("Product not found");
+//     }
 
-    const review = product.reviews.find(
-      (rev) => rev._id.toString() === reviewId
-    );
-    if (!review) {
-      res
-        .status(404)
-        .send({ message: `We could not find review ${reviewId}!` });
-      //throw new Error("Review not found");
-    }
+//     const review = product.reviews.find(
+//       (rev) => rev._id.toString() === reviewId
+//     );
+//     if (!review) {
+//       res
+//         .status(404)
+//         .send({ message: `We could not find review ${reviewId}!` });
+//       //throw new Error("Review not found");
+//     }
 
-    // Ensure only the review owner can edit
-    if (review.name !== req.user.name) {
-      res.status(403).send({ message: 'Unauthorized to edit this review!' });
-      //throw new Error("Unauthorized to edit this review");
-    }
+//     // Ensure only the review owner can edit
+//     if (review.name !== req.user.name) {
+//       res.status(403).send({ message: 'Unauthorized to edit this review!' });
+//       //throw new Error("Unauthorized to edit this review");
+//     }
 
-    review.rating = rating;
-    review.comment = comment;
+//     review.rating = rating;
+//     review.comment = comment;
 
-    review.createdAt = Date.now();
+//     review.createdAt = Date.now();
 
-    // update product
-    product.numReviews = product.reviews.length;
-    product.rating =
-      product.reviews.reduce((a, c) => c.rating + a, 0) /
-      product.reviews.length;
+//     // update product
+//     product.numReviews = product.reviews.length;
+//     product.rating =
+//       product.reviews.reduce((a, c) => c.rating + a, 0) /
+//       product.reviews.length;
 
-    await product.save();
+//     await product.save();
 
-    const updatedReview = product.reviews.find(
-      (rev) => rev._id.toString() === reviewId
-    );
-    res.status(201).send({
-      message: 'Review Updated',
-      review: updatedReview,
-      numReviews: product.numReviews,
-      rating: product.rating,
-    });
+//     const updatedReview = product.reviews.find(
+//       (rev) => rev._id.toString() === reviewId
+//     );
+//     res.status(201).send({
+//       message: 'Review Updated',
+//       review: updatedReview,
+//       numReviews: product.numReviews,
+//       rating: product.rating,
+//     });
 
-    // res.json({ message: 'Review updated successfully', product });
-  })
-);
+//     // res.json({ message: 'Review updated successfully', product });
+//   })
+// );
 
 productRouter.delete(
   '/:productId/reviews/:reviewId',
@@ -238,6 +238,53 @@ productRouter.delete(
     await product.save();
 
     res.json({ message: 'Review deleted successfully', product });
+  })
+);
+
+productRouter.put(
+  '/:productId/reviews/:reviewId',
+  isAuth,
+  expressAsyncHandler(async (req, res) => {
+    const { productId, reviewId } = req.params;
+    const { rating, comment } = req.body;
+
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).send({ message: 'Product not found!' });
+    }
+
+    const review = product.reviews.find(
+      (rev) => rev._id.toString() === reviewId
+    );
+    if (!review) {
+      return res.status(404).send({ message: `Review not found!` });
+    }
+
+    // Ensure only the review owner can edit
+    if (review.name !== req.user.name) {
+      return res
+        .status(403)
+        .send({ message: 'Unauthorized to edit this review!' });
+    }
+
+    review.rating = rating;
+    review.comment = comment;
+    review.createdAt = Date.now();
+
+    // Update product
+    product.numReviews = product.reviews.length;
+    product.rating =
+      product.reviews.length > 0
+        ? product.reviews.reduce((a, c) => c.rating + a, 0) /
+          product.reviews.length
+        : 0; // Handle case with no reviews
+
+    await product.save();
+
+    res.status(200).send({
+      message: 'Review Updated',
+      product, // Return the updated product
+    });
   })
 );
 
