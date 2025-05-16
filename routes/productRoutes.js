@@ -110,41 +110,41 @@ productRouter.delete(
   })
 );
 
-productRouter.post(
-  '/:id/reviews',
-  isAuth,
-  expressAsyncHandler(async (req, res) => {
-    const productId = req.params.id;
-    const product = await Product.findById(productId);
-    if (product) {
-      if (product.reviews.find((x) => x.name === req.user.name)) {
-        return res
-          .status(400)
-          .send({ message: 'You already submitted a review' });
-      }
+// productRouter.post(
+//   '/:id/reviews',
+//   isAuth,
+//   expressAsyncHandler(async (req, res) => {
+//     const productId = req.params.id;
+//     const product = await Product.findById(productId);
+//     if (product) {
+//       if (product.reviews.find((x) => x.name === req.user.name)) {
+//         return res
+//           .status(400)
+//           .send({ message: 'You already submitted a review' });
+//       }
 
-      const review = {
-        name: req.user.name,
-        rating: Number(req.body.rating),
-        comment: req.body.comment,
-      };
-      product.reviews.push(review);
-      product.numReviews = product.reviews.length;
-      product.rating =
-        product.reviews.reduce((a, c) => c.rating + a, 0) /
-        product.reviews.length;
-      const updatedProduct = await product.save();
-      res.status(201).send({
-        message: 'Review Created',
-        review: updatedProduct.reviews[updatedProduct.reviews.length - 1],
-        numReviews: product.numReviews,
-        rating: product.rating,
-      });
-    } else {
-      res.status(404).send({ message: 'Product Not Found' });
-    }
-  })
-);
+//       const review = {
+//         name: req.user.name,
+//         rating: Number(req.body.rating),
+//         comment: req.body.comment,
+//       };
+//       product.reviews.push(review);
+//       product.numReviews = product.reviews.length;
+//       product.rating =
+//         product.reviews.reduce((a, c) => c.rating + a, 0) /
+//         product.reviews.length;
+//       const updatedProduct = await product.save();
+//       res.status(201).send({
+//         message: 'Review Created',
+//         review: updatedProduct.reviews[updatedProduct.reviews.length - 1],
+//         numReviews: product.numReviews,
+//         rating: product.rating,
+//       });
+//     } else {
+//       res.status(404).send({ message: 'Product Not Found' });
+//     }
+//   })
+// );
 
 // productRouter.put(
 //   '/:productId/reviews/:reviewId',
@@ -155,84 +155,94 @@ productRouter.post(
 
 //     const product = await Product.findById(productId);
 //     if (!product) {
-//       res.status(404).send({ message: 'Product not found!' });
-//       //throw new Error("Product not found");
+//       return res.status(404).send({ message: 'Product not found!' });
 //     }
 
 //     const review = product.reviews.find(
 //       (rev) => rev._id.toString() === reviewId
 //     );
 //     if (!review) {
-//       res
-//         .status(404)
-//         .send({ message: `We could not find review ${reviewId}!` });
-//       //throw new Error("Review not found");
+//       return res.status(404).send({ message: `Review not found!` });
 //     }
 
 //     // Ensure only the review owner can edit
 //     if (review.name !== req.user.name) {
-//       res.status(403).send({ message: 'Unauthorized to edit this review!' });
-//       //throw new Error("Unauthorized to edit this review");
+//       return res
+//         .status(403)
+//         .send({ message: 'Unauthorized to edit this review!' });
 //     }
 
 //     review.rating = rating;
 //     review.comment = comment;
-
 //     review.createdAt = Date.now();
 
-//     // update product
+//     // Update product
 //     product.numReviews = product.reviews.length;
 //     product.rating =
-//       product.reviews.reduce((a, c) => c.rating + a, 0) /
-//       product.reviews.length;
+//       product.reviews.length > 0
+//         ? product.reviews.reduce((a, c) => c.rating + a, 0) /
+//           product.reviews.length
+//         : 0; // Handle case with no reviews
 
 //     await product.save();
 
-//     const updatedReview = product.reviews.find(
-//       (rev) => rev._id.toString() === reviewId
-//     );
-//     res.status(201).send({
+//     res.status(200).send({
 //       message: 'Review Updated',
-//       review: updatedReview,
-//       numReviews: product.numReviews,
-//       rating: product.rating,
+//       product, // Return the updated product
 //     });
-
-//     // res.json({ message: 'Review updated successfully', product });
 //   })
 // );
 
-productRouter.put(
-  '/:productId/reviews/:reviewId',
+productRouter.post(
+  '/:id/reviews',
   isAuth,
   expressAsyncHandler(async (req, res) => {
-    const { productId, reviewId } = req.params;
-    const { rating, comment } = req.body;
-
+    const productId = req.params.id;
     const product = await Product.findById(productId);
+
     if (!product) {
-      return res.status(404).send({ message: 'Product not found!' });
+      return res.status(404).send({ message: 'Product Not Found' });
     }
 
-    const review = product.reviews.find(
-      (rev) => rev._id.toString() === reviewId
+    const existingReview = product.reviews.find(
+      (x) => x.name === req.user.name
     );
-    if (!review) {
-      return res.status(404).send({ message: `Review not found!` });
+
+    if (existingReview) {
+      // Update the existing review
+      existingReview.rating = Number(req.body.rating);
+      existingReview.title = req.body.title;
+      existingReview.comment = req.body.comment;
+      //existingReview.createdAt = Date.now(); // Update the timestamp
+
+      res.status(200).send({
+        message: 'Review Updated',
+        review: existingReview,
+      });
+    } else {
+      // Create a new review
+      const review = {
+        name: req.user.name,
+        rating: Number(req.body.rating),
+        title: req.body.title,
+        comment: req.body.comment,
+      };
+      product.reviews.push(review);
+      product.numReviews = product.reviews.length;
+      product.rating =
+        product.reviews.reduce((a, c) => c.rating + a, 0) /
+        product.reviews.length;
+
+      const updatedProduct = await product.save();
+      res.status(201).send({
+        message: 'Review Created',
+        review: updatedProduct.reviews[updatedProduct.reviews.length - 1],
+        numReviews: product.numReviews,
+        rating: product.rating,
+      });
     }
 
-    // Ensure only the review owner can edit
-    if (review.name !== req.user.name) {
-      return res
-        .status(403)
-        .send({ message: 'Unauthorized to edit this review!' });
-    }
-
-    review.rating = rating;
-    review.comment = comment;
-    review.createdAt = Date.now();
-
-    // Update product
+    // Update product ratings and number of reviews
     product.numReviews = product.reviews.length;
     product.rating =
       product.reviews.length > 0
@@ -241,11 +251,6 @@ productRouter.put(
         : 0; // Handle case with no reviews
 
     await product.save();
-
-    res.status(200).send({
-      message: 'Review Updated',
-      product, // Return the updated product
-    });
   })
 );
 
