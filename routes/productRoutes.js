@@ -193,6 +193,66 @@ productRouter.delete(
 //   })
 // );
 
+// productRouter.post(
+//   '/:id/reviews',
+//   isAuth,
+//   expressAsyncHandler(async (req, res) => {
+//     const productId = req.params.id;
+//     const product = await Product.findById(productId);
+
+//     if (!product) {
+//       return res.status(404).send({ message: 'Product Not Found' });
+//     }
+
+//     const existingReview = product.reviews.find(
+//       (x) => x.name === req.user.name
+//     );
+
+//     if (existingReview) {
+//       // Update the existing review
+//       existingReview.rating = Number(req.body.rating);
+//       existingReview.title = req.body.title;
+//       existingReview.comment = req.body.comment;
+//       //existingReview.createdAt = Date.now(); // Update the timestamp
+
+//       res.status(200).send({
+//         message: 'Review Updated',
+//         review: existingReview,
+//       });
+//     } else {
+//       // Create a new review
+//       const review = {
+//         name: req.user.name,
+//         rating: Number(req.body.rating),
+//         title: req.body.title,
+//         comment: req.body.comment,
+//       };
+//       product.reviews.push(review);
+//       product.numReviews = product.reviews.length;
+//       product.rating =
+//         product.reviews.reduce((a, c) => c.rating + a, 0) /
+//         product.reviews.length;
+
+//       const updatedProduct = await product.save();
+//       res.status(201).send({
+//         message: 'Review Created',
+//         review: updatedProduct.reviews[updatedProduct.reviews.length - 1],
+//         numReviews: product.numReviews,
+//         rating: product.rating,
+//       });
+//     }
+
+//     // Update product ratings and number of reviews
+//     product.numReviews = product.reviews.length;
+//     product.rating =
+//       product.reviews.length > 0
+//         ? product.reviews.reduce((a, c) => c.rating + a, 0) /
+//           product.reviews.length
+//         : 0; // Handle case with no reviews
+
+//     await product.save();
+//   })
+// );
 productRouter.post(
   '/:id/reviews',
   isAuth,
@@ -213,11 +273,20 @@ productRouter.post(
       existingReview.rating = Number(req.body.rating);
       existingReview.title = req.body.title;
       existingReview.comment = req.body.comment;
-      //existingReview.createdAt = Date.now(); // Update the timestamp
+
+      // Recalculate rating
+      product.numReviews = product.reviews.length;
+      product.rating =
+        product.reviews.reduce((a, c) => c.rating + a, 0) /
+        product.reviews.length;
+
+      const updatedProduct = await product.save();
 
       res.status(200).send({
         message: 'Review Updated',
         review: existingReview,
+        numReviews: updatedProduct.numReviews,
+        rating: updatedProduct.rating,
       });
     } else {
       // Create a new review
@@ -237,20 +306,10 @@ productRouter.post(
       res.status(201).send({
         message: 'Review Created',
         review: updatedProduct.reviews[updatedProduct.reviews.length - 1],
-        numReviews: product.numReviews,
-        rating: product.rating,
+        numReviews: updatedProduct.numReviews,
+        rating: updatedProduct.rating,
       });
     }
-
-    // Update product ratings and number of reviews
-    product.numReviews = product.reviews.length;
-    product.rating =
-      product.reviews.length > 0
-        ? product.reviews.reduce((a, c) => c.rating + a, 0) /
-          product.reviews.length
-        : 0; // Handle case with no reviews
-
-    await product.save();
   })
 );
 
