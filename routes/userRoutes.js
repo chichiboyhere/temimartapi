@@ -39,10 +39,13 @@ userRouter.put(
     const user = await User.findById(req.user._id);
     if (user) {
       let imageData = {};
-      let image = req.body.profileImage;
-      if (image) {
-        const result = await uploadToCloudinary(image, 'my-profile');
-        imageData = result;
+      //let image = req.body.profileImage;
+      if (req.body.profileImage) {
+        const results = await uploadToCloudinary(
+          req.body.profileImage,
+          'my-profile'
+        );
+        imageData = results;
       }
       user.name = req.body.name || user.name;
       user.email = req.body.email || user.email;
