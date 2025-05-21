@@ -4,6 +4,7 @@ import expressAsyncHandler from 'express-async-handler';
 import jwt from 'jsonwebtoken';
 import User from '../models/userModel.js';
 import { isAuth, isAdmin, generateToken, baseUrl, mailgun } from '../utils.js';
+import uploadToCloudinary from './uploadRoutes.js';
 
 const userRouter = express.Router();
 
@@ -37,8 +38,15 @@ userRouter.put(
   expressAsyncHandler(async (req, res) => {
     const user = await User.findById(req.user._id);
     if (user) {
+      let imageData = {};
+      let image = req.body.profileImage;
+      if (image) {
+        const result = await uploadToCloudinary(image, 'my-profile');
+        imageData = result;
+      }
       user.name = req.body.name || user.name;
       user.email = req.body.email || user.email;
+      user.profileImage = req.body.profileImage || user.profileImage;
       if (req.body.password) {
         user.password = bcrypt.hashSync(req.body.password, 8);
       }
@@ -48,6 +56,7 @@ userRouter.put(
         _id: updatedUser._id,
         name: updatedUser.name,
         email: updatedUser.email,
+        profileImage: updatedUser.profileImage,
         isAdmin: updatedUser.isAdmin,
         token: generateToken(updatedUser),
       });
