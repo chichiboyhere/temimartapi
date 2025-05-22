@@ -46,11 +46,11 @@ userRouter.put(
           'my-profile'
         );
         imageData = results;
-        user.profileImage = results.url;
+        //user.profileImage = results.url;
       }
       user.name = req.body.name || user.name;
       user.email = req.body.email || user.email;
-      user.profileImage = imageData.url || user.profileImage;
+      user.profileImage = imageData || user.profileImage;
 
       if (req.body.password) {
         user.password = bcrypt.hashSync(req.body.password, 8);
