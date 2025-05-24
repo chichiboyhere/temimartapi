@@ -50,7 +50,7 @@ userRouter.put(
       }
       user.name = req.body.name || user.name;
       user.email = req.body.email || user.email;
-      user.profileImage = imageData || user.profileImage;
+      user.profileImage = imageData.url || user.profileImage;
 
       if (req.body.password) {
         user.password = bcrypt.hashSync(req.body.password, 8);
