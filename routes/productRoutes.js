@@ -43,6 +43,8 @@ productRouter.post(
         brand,
         countInStock,
         description,
+        discount,
+        numSold,
       } = req.body;
       let imageData = {};
       if (image) {
@@ -60,6 +62,8 @@ productRouter.post(
         rating: 0,
         numReviews: 0,
         description,
+        discount,
+        numSold,
       });
 
       const product = await newProduct.save();
@@ -87,6 +91,8 @@ productRouter.put(
       product.brand = req.body.brand;
       product.countInStock = req.body.countInStock;
       product.description = req.body.description;
+      product.discount = req.body.discount;
+      product.numSold = req.body.numSold;
       await product.save();
       res.send({ message: 'Product Updated' });
     } else {
