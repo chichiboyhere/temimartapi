@@ -3,9 +3,10 @@ import mongoose from 'mongoose';
 const reviewSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
-    title: { type: String, required: false },
     comment: { type: String, required: true },
     rating: { type: Number, required: true },
+    likedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }], // users who liked the review
+    numOfLikes: { type: Number, default: 0 },
   },
   {
     timestamps: true,
