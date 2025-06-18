@@ -318,12 +318,51 @@ productRouter.post(
   })
 );
 
+// productRouter.post(
+//   // To update a liked review
+//   '/:productId/reviews/:reviewId',
+//   isAuth,
+//   expressAsyncHandler(async (req, res) => {
+//     // Fetch the product and review
+//     const { productId, reviewId } = req.params;
+//     const product = await Product.findById(productId);
+
+//     if (!product) {
+//       return res.status(404).send({ message: 'Product Not Found' });
+//     }
+
+//     const likedReview = product.reviews.findById((x) => x._id === reviewId);
+
+//     if (!likedReview) {
+//       return res.status(404).send({ message: 'Review Not Found' });
+//     }
+
+//     // If a review is liked, add the user to the likedBy array
+//     const like = req.body.liked;
+//     if (like) {
+//       likedReview.likedBy.push(req.user.name);
+//     }
+
+//     // If a review is unliked, remove the user from the likedBy array
+//     const unlike = req.body.unliked;
+//     if (unlike) {
+//       likedReview.likedBy.filter((x) => x !== req.user._id);
+//     }
+
+//     // Count the number of likes
+//     const numOfLikes = likedReview.likedBy.length;
+//     likedReview.numOfLikes = numOfLikes;
+
+//     // Update the product
+//     await product.save();
+//     res.send({ message: 'Review Liked', product, numOfLikes });
+//   })
+// );
+
 productRouter.post(
-  // To update a liked review
-  '/:productId/reviews/:reviewId',
+  '/:productId/reviews/:reviewId/like',
   isAuth,
   expressAsyncHandler(async (req, res) => {
-    // Fetch the product and review
     const { productId, reviewId } = req.params;
     const product = await Product.findById(productId);
 
@@ -331,31 +370,36 @@ productRouter.post(
       return res.status(404).send({ message: 'Product Not Found' });
     }
 
-    const likedReview = product.reviews.findById((x) => x._id === reviewId);
+    const likedReview = product.reviews.id(reviewId);
 
     if (!likedReview) {
       return res.status(404).send({ message: 'Review Not Found' });
     }
 
-    // If a review is liked, add the user to the likedBy array
-    const like = req.body.liked;
-    if (like) {
-      likedReview.likedBy.push(req.user.name);
+    const userId = req.user._id.toString();
+
+    if (req.body.liked) {
+      const alreadyLiked = likedReview.likedBy.some(
+        (id) => id.toString() === userId
+      );
+      if (!alreadyLiked) {
+        likedReview.likedBy.push(req.user._id);
+      }
     }
 
-    // If a review is unliked, remove the user from the likedBy array
-    const unlike = req.body.unliked;
-    if (unlike) {
-      likedReview.likedBy.filter((x) => x !== req.user._id);
+    if (req.body.unliked) {
+      likedReview.likedBy = likedReview.likedBy.filter(
+        (id) => id.toString() !== userId
+      );
     }
 
-    // Count the number of likes
-    const numOfLikes = likedReview.likedBy.length;
-    likedReview.numOfLikes = numOfLikes;
+    likedReview.numOfLikes = likedReview.likedBy.length;
 
-    // Update the product
     await product.save();
-    res.send({ message: 'Review Liked', product, numOfLikes });
+    res.send({
+      message: 'Review updated',
+      numOfLikes: likedReview.numOfLikes,
+    });
   })
 );
 
