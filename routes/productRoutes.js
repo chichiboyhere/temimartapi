@@ -436,9 +436,13 @@ productRouter.delete(
     product.rating =
       product.reviews.reduce((a, c) => c.rating + a, 0) /
       product.reviews.length;
-    await product.save();
+    const updatedProduct = await product.save();
 
-    res.json({ message: 'Review deleted successfully', product });
+    res.status(201).send({
+      message: 'Review Deleted',
+      numReviews: updatedProduct.numReviews,
+      rating: updatedProduct.rating,
+    });
   })
 );
 
