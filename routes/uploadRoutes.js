@@ -21,11 +21,14 @@
 import { v2 as cloudinary } from 'cloudinary';
 import fs from 'fs';
 import axios from 'axios';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 cloudinary.config({
-  cloud_name: 'doidxxag9',
-  api_key: '218652459668638',
-  api_secret: 'yNhJEonaV7t_p-Oe1Cypa4Atj0M',
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
 const uploadToCloudinary = async (fileInput, folder = 'my-profile') => {

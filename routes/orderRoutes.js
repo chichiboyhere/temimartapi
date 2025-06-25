@@ -5,8 +5,13 @@ import User from '../models/userModel.js';
 import Product from '../models/productModel.js';
 import { isAuth, isAdmin, mailgun, payOrderEmailTemplate } from '../utils.js';
 import Stripe from 'stripe';
+import dotenv from 'dotenv';
 
-const stripe = new Stripe(env.process.STRIPE_SECRET_KEY, {
+dotenv.config();
+
+const stripeKey = process.env.STRIPE_KEY;
+
+const stripe = new Stripe(stripeKey, {
   apiVersion: '2023-08-16', // latest stable version
 });
 
